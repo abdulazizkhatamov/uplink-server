@@ -1,5 +1,5 @@
 .env
-src/generated/prisma/
+prisma/generated/prisma/
 
 # Logs
 logs
