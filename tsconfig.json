@@ -3,10 +3,13 @@
   "compilerOptions": {
     "outDir": "dist",
     "sourceMap": true,
-    "baseUrl": ".", // root of your project
+    "baseUrl": "./src", // Make sure baseUrl points to src
     "paths": {
-      "@/*": ["src/*"]
-    }
+      "@/*": ["*"] // Alias "@" to the src folder
+    },
+    "esModuleInterop": true, // Ensure compatibility with ES modules
+    "skipLibCheck": true, // Avoid unnecessary checks
+    "strict": true // Enable strict type checking
   },
   "include": ["src/**/*.ts"]
 }

@@ -10,10 +10,15 @@ export default fp<FastifyCorsOptions>(async (fastify) => {
   await fastify.register(cors, {
     origin: (origin, callback) => {
       const hostname = origin ? new URL(origin).hostname : "";
-      console.log("Origin: ", { origin });
 
-      if (hostname === "localhost") {
-        //  Request from localhost will pass
+      // Allow undefined origin in development
+      if (process.env.NODE_ENV === "development" && !origin) {
+        callback(null, true);
+        return;
+      }
+
+      //  Request from origins will pass
+      if (["localhost"].includes(hostname)) {
         callback(null, true);
         return;
       }
