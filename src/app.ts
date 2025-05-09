@@ -32,10 +32,6 @@ const app: FastifyPluginAsync<AppOptions> = async (
     dir: join(__dirname, "routes"),
     options: opts,
   });
-
-  fastify.ready().then(() => {
-    console.log(fastify.printRoutes());
-  });
 };
 
 export default app;

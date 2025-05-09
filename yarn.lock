@@ -148,6 +148,14 @@
     ajv-formats "^3.0.1"
     fast-uri "^3.0.0"
 
+"@fastify/auth@^5.0.2":
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/@fastify/auth/-/auth-5.0.2.tgz#218c5703ab616cc59106a0d1c87cd85ad634bef2"
+  integrity sha512-EdVw2yBV/rD7b9S2NxP7Mm0MOiC3NnbR9InO/p8ksp1jzcb4OqTmJBFarIQsEHsUJ71BxOnYLdaYNlm3pi2e2Q==
+  dependencies:
+    fastify-plugin "^5.0.0"
+    reusify "^1.0.4"
+
 "@fastify/autoload@^6.0.0":
   version "6.3.0"
   resolved "https://registry.yarnpkg.com/@fastify/autoload/-/autoload-6.3.0.tgz#850bed2bc07a6dcf5a778e2e2bb60df6f910a814"
@@ -754,6 +762,22 @@ fastfall@^1.5.0:
   dependencies:
     reusify "^1.0.0"
 
+"fastify-auth-deprecated@npm:fastify-auth@1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/fastify-auth/-/fastify-auth-1.1.0.tgz#75076c9c0664addaff07078907db6432086be1d6"
+  integrity sha512-8IajmAZB3QJ3wTP0q8Z3TG9DkxrIcAlS85TdPCBEfJi3mMKQd/sCYxtZ0dYv11v5hZaJ9z8XmNzhK3AH6/JpNw==
+  dependencies:
+    fastify-plugin "^3.0.0"
+    reusify "^1.0.4"
+
+fastify-auth@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/fastify-auth/-/fastify-auth-1.2.0.tgz#325ba0dc292d5ad2c8cb01faaa3f02d9886ace2c"
+  integrity sha512-h/3pW5o8hwfpxL0b7JF2hObGDAiFi2QAvuoEGr0wJ1w3vr7yGn3V+wPWcLaz8pzlO0h0DsYIKSAoSbHBE0OXnA==
+  dependencies:
+    fastify-auth-deprecated "npm:fastify-auth@1.1.0"
+    process-warning "^1.0.0"
+
 fastify-cli@^7.4.0:
   version "7.4.0"
   resolved "https://registry.yarnpkg.com/fastify-cli/-/fastify-cli-7.4.0.tgz#9f9d49d589f17e05b5cdeeb326efe9c8ed54de32"
@@ -775,6 +799,11 @@ fastify-cli@^7.4.0:
     resolve-from "^5.0.0"
     semver "^7.3.5"
     yargs-parser "^21.1.1"
+
+fastify-plugin@^3.0.0:
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/fastify-plugin/-/fastify-plugin-3.0.1.tgz#79e84c29f401020f38b524f59f2402103fd21ed2"
+  integrity sha512-qKcDXmuZadJqdTm6vlCqioEbyewF60b/0LOFCcYN1B6BIZGlYJumWWOYs70SFYLDAH4YqdE1cxH/RKMG7rFxgA==
 
 fastify-plugin@^5.0.0:
   version "5.0.1"
@@ -1259,6 +1288,11 @@ prisma@6.7.0:
     "@prisma/engines" "6.7.0"
   optionalDependencies:
     fsevents "2.3.3"
+
+process-warning@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/process-warning/-/process-warning-1.0.0.tgz#980a0b25dc38cd6034181be4b7726d89066b4616"
+  integrity sha512-du4wfLyj4yCZq1VupnVSZmRsPJsNuxoDQFdCFHLaYiEbFBD7QE0a+I4D7hOxrVnh78QE/YipFAj9lXHiXocV+Q==
 
 process-warning@^4.0.0:
   version "4.0.1"
