@@ -22,4 +22,9 @@ model User {
   password   String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+
+  // Email verification
+  is_email_verified Boolean   @default(false)
+  email_token       String?
+  email_token_exp   DateTime?
 }
