@@ -26,7 +26,12 @@ export default fp<FastifyCorsOptions>(async (fastify) => {
       callback(new Error("Not allowed"), false);
     },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "x-csrf-token",
+    ],
     credentials: true,
   });
 });

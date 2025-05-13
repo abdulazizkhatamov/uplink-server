@@ -7,12 +7,14 @@ const authRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
   // Protected route example
   fastify.get(
     "/me",
-    { preHandler: [fastify.auth([fastify.verifyAccessToken])] },
+    { preHandler: fastify.csrfProtection },
     async (request, reply) => {
-      return { id: 1, user: request.user, dummy: "Dummy data !" };
+      if (!request.session.user)
+        return reply.status(401).send({ error: "Unauthorized" });
+
+      return { id: 1, user: request.session.user, dummy: "Dummy data !" };
     }
   );
-
   // Login route
   fastify.post(
     "/login",
@@ -31,7 +33,6 @@ const authRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
             type: "object",
             properties: {
               message: { type: "string" },
-              token: { type: "string" },
             },
           },
         },
@@ -55,31 +56,14 @@ const authRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
         return reply.status(401).send({ message: "Invalid email or password" });
       }
 
-      const accessToken = fastify.jwt.sign(
-        { id: user.id, email: user.email },
-        { expiresIn: "1h" }
-      );
-      const refreshToken = fastify.jwt.sign(
-        { id: user.id, email: user.email },
-        { expiresIn: "7d" }
-      );
+      request.session.user = { id: user.id, email: user.email };
 
-      reply.setCookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        path: "/api/v1/auth/refresh",
-      });
-
-      request.session.user = { email };
-
+      reply.generateCsrf();
       return reply.status(200).send({
         message: "Login successful",
-        token: accessToken,
       });
     }
   );
-
   // Register route
   fastify.post(
     "/register",
@@ -87,7 +71,7 @@ const authRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
       schema: {
         body: {
           type: "object",
-          required: ["first_name", "email", "password"],
+          required: ["first_name", "last_name", "email", "password"],
           properties: {
             first_name: { type: "string" },
             last_name: { type: "string" },
@@ -100,7 +84,6 @@ const authRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
             type: "object",
             properties: {
               message: { type: "string" },
-              token: { type: "string" },
             },
           },
           400: {
@@ -136,7 +119,7 @@ const authRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
         const tokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiration time
 
         // Create the user in the database
-        const user = await prisma.user.create({
+        await prisma.user.create({
           data: {
             first_name,
             last_name,
@@ -168,27 +151,8 @@ const authRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
           `,
         });
 
-        const accessToken = fastify.jwt.sign(
-          { id: user.id, email: user.email },
-          { expiresIn: "1h" }
-        );
-        const refreshToken = fastify.jwt.sign(
-          { id: user.id, email: user.email },
-          { expiresIn: "7d" }
-        );
-
-        reply.setCookie("refreshToken", refreshToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "strict",
-          path: "/api/v1/auth/refresh",
-        });
-
-        console.log({ accessToken });
-
         return reply.status(201).send({
           message: "User created successfully. Please verify your email.",
-          token: accessToken,
         });
       } catch (err) {
         fastify.log.error(err);
@@ -198,13 +162,7 @@ const authRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
   );
   fastify.post("/logout", async (request, reply) => {
     try {
-      // Clear the refresh token cookie
-      reply.clearCookie("refreshToken", {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
-        path: "/api/v1/auth/refresh",
-      });
+      await request.session.destroy();
 
       return reply.status(200).send({ message: "Logged out successfully" });
     } catch (err) {
@@ -212,36 +170,27 @@ const authRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
       return reply.status(500).send({ message: "Internal server error" });
     }
   });
-  // Refresh route
-  fastify.post(
-    "/refresh",
-    { preHandler: [fastify.verifyRefreshToken] },
+  fastify.get(
+    "/csrf-token",
+    {
+      schema: {
+        response: {
+          201: {
+            type: "object",
+            properties: {
+              message: { type: "string" },
+              token: { type: "string" },
+            },
+          },
+        },
+      },
+    },
     async (request, reply) => {
-      const refreshToken = request.cookies.refreshToken;
-
-      console.log(refreshToken);
-
-      if (!refreshToken) {
-        return reply.status(401).send({ message: "No refresh token provided" });
-      }
-
-      try {
-        const decoded = fastify.jwt.verify<{ id: number; email: string }>(
-          refreshToken
-        );
-
-        const accessToken = fastify.jwt.sign(
-          { id: decoded.id, email: decoded.email },
-          { expiresIn: "1h" }
-        );
-
-        return reply.status(200).send({
-          message: "Token refreshed successfully",
-          token: accessToken,
-        });
-      } catch (err) {
-        return reply.status(401).send({ message: "Invalid refresh token" });
-      }
+      const token = reply.generateCsrf();
+      return reply.status(201).send({
+        message: "CSRF token generated successfully",
+        token: token,
+      });
     }
   );
 };

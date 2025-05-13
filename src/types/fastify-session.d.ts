@@ -2,7 +2,7 @@ import "@fastify/session";
 
 // 2. Declare module augmentation
 declare module "@fastify/session" {
-  interface SessionData {
+  interface FastifySessionObject {
     user: {
       id: string;
       email: string;
