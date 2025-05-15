@@ -5,20 +5,17 @@ import prisma from "../../../lib/prisma";
 
 const authRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
   // Protected route example
-  fastify.get(
-    "/me",
-    { preHandler: fastify.csrfProtection },
-    async (request, reply) => {
-      if (!request.session.user)
-        return reply.status(401).send({ error: "Unauthorized" });
+  fastify.get("/me", async (request, reply) => {
+    if (!request.session.user)
+      return reply.status(401).send({ error: "Unauthorized" });
 
-      return { id: 1, user: request.session.user, dummy: "Dummy data !" };
-    }
-  );
+    return { id: 1, user: request.session.user, dummy: "Dummy data !" };
+  });
   // Login route
   fastify.post(
     "/login",
     {
+      preHandler: fastify.csrfProtection,
       schema: {
         body: {
           type: "object",
@@ -58,7 +55,6 @@ const authRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
 
       request.session.user = { id: user.id, email: user.email };
 
-      reply.generateCsrf();
       return reply.status(200).send({
         message: "Login successful",
       });
@@ -68,6 +64,7 @@ const authRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
   fastify.post(
     "/register",
     {
+      preHandler: fastify.csrfProtection,
       schema: {
         body: {
           type: "object",
@@ -119,7 +116,7 @@ const authRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
         const tokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiration time
 
         // Create the user in the database
-        await prisma.user.create({
+        const user = await prisma.user.create({
           data: {
             first_name,
             last_name,
@@ -151,6 +148,7 @@ const authRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
           `,
         });
 
+        request.session.user = { id: user.id, email: user.email };
         return reply.status(201).send({
           message: "User created successfully. Please verify your email.",
         });
@@ -160,16 +158,20 @@ const authRoute: FastifyPluginAsync = async (fastify): Promise<void> => {
       }
     }
   );
-  fastify.post("/logout", async (request, reply) => {
-    try {
-      await request.session.destroy();
+  fastify.post(
+    "/logout",
+    { preHandler: fastify.csrfProtection },
+    async (request, reply) => {
+      try {
+        await request.session.destroy();
 
-      return reply.status(200).send({ message: "Logged out successfully" });
-    } catch (err) {
-      fastify.log.error(err);
-      return reply.status(500).send({ message: "Internal server error" });
+        return reply.status(200).send({ message: "Logged out successfully" });
+      } catch (err) {
+        fastify.log.error(err);
+        return reply.status(500).send({ message: "Internal server error" });
+      }
     }
-  });
+  );
   fastify.get(
     "/csrf-token",
     {
